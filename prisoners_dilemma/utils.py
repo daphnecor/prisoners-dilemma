@@ -9,15 +9,15 @@ import seaborn as sns
 from prisoners_dilemma.env import PrisonersDilemmaEnv
 
 
-def vis_action_matrix(
-    indiv_action_seq: np.array, num_agents: int = 2
-) -> np.array:
-    """
-    Get a matrix with the combined actions of both agents
-    :param indiv_action_seq: action taken for each episode
-    :param num_episodes: total number of episodes
-    :param num_agents: number of agents in the game
-    :return: matrix of size (num_agents * num_actions, num_episodes)
+def vis_action_matrix(indiv_action_seq: np.ndarray, num_agents: int = 2) -> np.ndarray:
+    """Get a matrix with the combined actions of both agents
+
+    Args:
+        indiv_action_seq (ndarray): action taken for each episode
+        num_agents (int): number of agents in the game, defaults to 2
+
+    Returns:
+        ndarray: action matrix of size (num_agents * num_actions, num_episodes)
     """
 
     act_matrix = np.zeros(
@@ -40,8 +40,16 @@ def vis_action_matrix(
     return act_matrix.T
 
 
-def init_q_tables(init_type: str, env: object):
-    """Initialize the Q-tables"""
+def init_q_tables(init_type: str, env: PrisonersDilemmaEnv) -> np.ndarray:
+    """Initialize the Q-tables.
+
+    Args:
+        init_type (str): initialization version
+        env (PrisonersDilemmaEnv): prisoner's dilemme environment
+
+    Returns:
+        ndarray: table of Q-values for the players
+    """
     if init_type == "zeros":
         return np.zeros(env.action_space.n), np.zeros(env.action_space.n)
     # TODO: add more ways to initialize the Q-tables
@@ -53,8 +61,18 @@ def run_standard_ipd_exp(
     config: Dict,
 ) -> Tuple[np.array, np.array, np.array, np.array]:
     """
-    Run a number of in the standard IPD, that is, there is only one state and
-    agents cannote observe each others' actions.
+    Run a number of in the standard IPD.
+
+    Note: There is only one state and agents cannote observe the others' actions.
+
+    Args:
+        config (Dict): game configurations
+
+    Returns:
+        ndarray: q-value trajectory of player one
+        ndarray: q-value trajectory of player two
+        ndarray: sequence of rewards obtained by the players
+        ndarray: sequence of actions played by the players
     """
     game_env = PrisonersDilemmaEnv(
         config["payoffs"]["reward_payoff"],
@@ -97,17 +115,17 @@ def run_standard_ipd_exp(
         _, rewards, _, _, _ = game_env.step(action=actions)
 
         # Update Q-values
-        q_table_one[act_play_one] = q_table_one[act_play_one] + config[
-            "params"
-        ]["alpha"][0] * (
+        q_table_one[act_play_one] = q_table_one[act_play_one] + config["params"][
+            "alpha"
+        ][0] * (
             rewards[0]
             + config["params"]["gamma"][0] * np.max(q_table_one)
             - q_table_one[act_play_one]
         )
 
-        q_table_two[act_play_two] = q_table_two[act_play_two] + config[
-            "params"
-        ]["alpha"][1] * (
+        q_table_two[act_play_two] = q_table_two[act_play_two] + config["params"][
+            "alpha"
+        ][1] * (
             rewards[1]
             + config["params"]["gamma"][1] * np.max(q_table_two)
             - q_table_two[act_play_two]
@@ -129,17 +147,28 @@ def run_standard_ipd_exp(
 
 
 def make_q_vals_fig_standard(
-    action_seq, config, q_traj_one, q_traj_two, input_axs=None
-):
+    action_seq: np.ndarray,
+    config: Dict,
+    q_traj_one: np.ndarray,
+    q_traj_two: np.ndarray,
+    input_axs: None | np.ndarray = None,
+) -> None:
     """
     Visualize the Q-values and actions over training episodes.
+
+    Args:
+        action_seq (ndarray): sequence of actions played by the players
+        config (Dict): configurations of the game
+        q_traj_one (ndarray): Q-value trajectory of player one
+        q_traj_two (ndarray): Q-value trajectory of player two
+        input_axs (ndarray): axes to use for the figures or None to create a new figure,
+            default to `None`
     """
     if input_axs is None:  # Make a single figure
         _, axs = plt.subplots(2, 1, gridspec_kw={"height_ratios": [2, 1]})
         axs[0].set_title(
             f'ϵ=({config["params"]["eps"][0]}, {config["params"]["eps"][1]}),'
-            f' γ=({config["params"]["gamma"][0]}, '
-            f'{config["params"]["gamma"][1]})'
+            f' γ=({config["params"]["gamma"][0]}, {config["params"]["gamma"][1]})'
         )
         axs[0].set_xlabel("Episode")
         axs[0].set_ylabel("Q-value")
