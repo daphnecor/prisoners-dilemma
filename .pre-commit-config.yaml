@@ -1,8 +1,4 @@
 repos:
-  - repo: https://github.com/psf/black
-    rev: stable
-    hooks:
-      - id: black
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
@@ -12,10 +8,56 @@ repos:
       - id: debug-statements
       - id: name-tests-test
       - id: requirements-txt-fixer
-  # - repo: local
-  #   hooks:
-  #   - id: pylint
-  #     name: pylint
-  #     entry: pylint
-  #     language: system
-  #     types: [python]
+      - id: pretty-format-json
+        args: [--autofix]
+      - id: sort-simple-yaml
+      - id: mixed-line-ending
+      - id: fix-encoding-pragma
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-docstring-first
+      - id: check-case-conflict
+      - id: check-byte-order-marker
+      - id: check-builtin-literals
+      - id: check-added-large-files
+  - repo: https://github.com/humitos/mirrors-autoflake
+    rev: v1.1
+    hooks:
+    - id: autoflake
+      args: [
+        '--in-place',
+        '--expand-star-imports',
+        '--remove-all-unused-imports',
+        '--remove-unused-variable',
+        '--remove-duplicate-keys',
+      ]
+  - repo: https://github.com/timothycrosley/isort
+    rev: 5.12.0
+    hooks:
+    - id: isort
+      additional_dependencies: [toml]
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+    - id: flake8
+      args: [--exit-zero]
+      verbose: true
+  - repo: https://github.com/psf/black
+    rev: 23.1.0
+    hooks:
+    - id: black
+      language_version: python3
+      files: \.pyi?$
+  - repo: https://github.com/roy-ht/pre-commit-jupyter
+    rev: v1.2.1
+    hooks:
+    - id: jupyter-notebook-cleanup
+      args:
+        - --remove-kernel-metadata
+        - --pin-patterns
+  - repo: https://github.com/pre-commit/mirrors-pylint
+    rev: 'v3.0.0a5'
+    hooks:
+    - id: pylint
+      args:
+      - --ignore-imports=yes
