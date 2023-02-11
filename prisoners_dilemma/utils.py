@@ -1,11 +1,17 @@
-from typing import Dict, List, Tuple, Union
+# -*- coding: utf-8 -*-
+"""Collection of utility function for the prisoner's dilemma."""
+from typing import Dict, Tuple
+
+import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-import matplotlib.pyplot as plt
-from env import PrisonersDilemmaEnv
+
+from prisoners_dilemma.env import PrisonersDilemmaEnv
 
 
-def vis_action_matrix(indiv_action_seq: np.array, num_agents: int = 2) -> np.array:
+def vis_action_matrix(
+    indiv_action_seq: np.array, num_agents: int = 2
+) -> np.array:
     """
     Get a matrix with the combined actions of both agents
     :param indiv_action_seq: action taken for each episode
@@ -40,8 +46,12 @@ def init_q_tables(init_type: str, env: object):
         return np.zeros(env.action_space.n), np.zeros(env.action_space.n)
     # TODO: add more ways to initialize the Q-tables
 
+    raise NotImplementedError("Initialization method not known.")
 
-def run_standard_ipd_exp(config: Dict) -> Tuple[np.array, np.array, np.array, np.array]:
+
+def run_standard_ipd_exp(
+    config: Dict,
+) -> Tuple[np.array, np.array, np.array, np.array]:
     """
     Run a number of in the standard IPD, that is, there is only one state and
     agents cannote observe each others' actions.
@@ -71,31 +81,33 @@ def run_standard_ipd_exp(config: Dict) -> Tuple[np.array, np.array, np.array, np
             act_play_one = np.array([game_env.action_space.sample()])
         else:  # Exploit
             act_play_one = np.random.choice(
-                a=np.argwhere((q_table_one == q_table_one.max())).flatten(), size=(1,)
+                a=np.argwhere((q_table_one == q_table_one.max())).flatten(),
+                size=(1,),
             )
         # Player two: take random action
         if np.random.random() < config["params"]["eps"][1]:
             act_play_two = np.array([game_env.action_space.sample()])
         else:  # Exploit
             act_play_two = np.random.choice(
-                a=np.argwhere((q_table_two == q_table_two.max())).flatten(), size=(1,)
+                a=np.argwhere((q_table_two == q_table_two.max())).flatten(),
+                size=(1,),
             )
         # Take a step
         actions = np.concatenate([act_play_one, act_play_two])
         _, rewards, _, _, _ = game_env.step(action=actions)
 
         # Update Q-values
-        q_table_one[act_play_one] = q_table_one[act_play_one] + config["params"][
-            "alpha"
-        ][0] * (
+        q_table_one[act_play_one] = q_table_one[act_play_one] + config[
+            "params"
+        ]["alpha"][0] * (
             rewards[0]
             + config["params"]["gamma"][0] * np.max(q_table_one)
             - q_table_one[act_play_one]
         )
 
-        q_table_two[act_play_two] = q_table_two[act_play_two] + config["params"][
-            "alpha"
-        ][1] * (
+        q_table_two[act_play_two] = q_table_two[act_play_two] + config[
+            "params"
+        ]["alpha"][1] * (
             rewards[1]
             + config["params"]["gamma"][1] * np.max(q_table_two)
             - q_table_two[act_play_two]
@@ -117,15 +129,17 @@ def run_standard_ipd_exp(config: Dict) -> Tuple[np.array, np.array, np.array, np
 
 
 def make_q_vals_fig_standard(
-    num_simuls, action_seq, config, q_traj_one, q_traj_two, input_axs=None
+    action_seq, config, q_traj_one, q_traj_two, input_axs=None
 ):
     """
     Visualize the Q-values and actions over training episodes.
     """
     if input_axs is None:  # Make a single figure
-        fig, axs = plt.subplots(2, 1, gridspec_kw={"height_ratios": [2, 1]})
+        _, axs = plt.subplots(2, 1, gridspec_kw={"height_ratios": [2, 1]})
         axs[0].set_title(
-            f'ϵ=({config["params"]["eps"][0]}, {config["params"]["eps"][1]}), γ=({config["params"]["gamma"][0]}, {config["params"]["gamma"][1]})'
+            f'ϵ=({config["params"]["eps"][0]}, {config["params"]["eps"][1]}),'
+            f' γ=({config["params"]["gamma"][0]}, '
+            f'{config["params"]["gamma"][1]})'
         )
         axs[0].set_xlabel("Episode")
         axs[0].set_ylabel("Q-value")
@@ -135,7 +149,9 @@ def make_q_vals_fig_standard(
     agent_one_colors = ["b", "g"]
     for action_i in range(config["num_actions"]):
         axs[0].plot(
-            q_traj_one[:, action_i], color=agent_one_colors[action_i], alpha=0.8
+            q_traj_one[:, action_i],
+            color=agent_one_colors[action_i],
+            alpha=0.8,
         )
         axs[0].text(
             q_traj_one.shape[0],
@@ -152,7 +168,9 @@ def make_q_vals_fig_standard(
     agent_two_colors = ["r", "orange"]
     for action_i in range(config["num_actions"]):
         axs[0].plot(
-            q_traj_two[:, action_i], color=agent_two_colors[action_i], alpha=0.8
+            q_traj_two[:, action_i],
+            color=agent_two_colors[action_i],
+            alpha=0.8,
         )
         axs[0].text(
             q_traj_two.shape[0],
@@ -165,10 +183,7 @@ def make_q_vals_fig_standard(
         )
 
     # Add lines between episodes for if few episodes, otherwise leave out
-    if config["num_episodes"] < 200:
-        LINEWIDTHS = 0.15
-    else:
-        LINEWIDTHS = 0
+    line_widths = 0.15 if config["num_episodes"] < 200 else 0
 
     # Obtain combined action matrix
     comb_act = vis_action_matrix(action_seq)
@@ -182,7 +197,7 @@ def make_q_vals_fig_standard(
         vmax=1,
         yticklabels=["(D, D)", "(D, C)", "(C, D)", "(C, C)"],
         xticklabels=[],
-        linewidths=LINEWIDTHS,
+        linewidths=line_widths,
         linecolor="k",
         ax=axs[1],
     )
