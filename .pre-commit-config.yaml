@@ -40,7 +40,7 @@ repos:
     rev: 6.0.0
     hooks:
     - id: flake8
-      args: [--exit-zero, --max-line-length=79]
+      args: [--exit-zero, --max-line-length=88]
       verbose: true
   - repo: https://github.com/psf/black
     rev: 23.1.0
@@ -48,7 +48,7 @@ repos:
     - id: black
       language_version: python3
       files: \.pyi?$
-      args: [--line-length=79]
+      args: [--line-length=88]
   - repo: https://github.com/roy-ht/pre-commit-jupyter
     rev: v1.2.1
     hooks:
@@ -62,3 +62,7 @@ repos:
     - id: pylint
       args:
       - --ignore-imports=yes
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: 'v1.0.0'
+  #   hooks:
+  #   -   id: mypy
