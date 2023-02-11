@@ -57,10 +57,10 @@ def run_standard_ipd_exp(
     agents cannote observe each others' actions.
     """
     game_env = PrisonersDilemmaEnv(
-        config["payoffs"]["R"],
-        config["payoffs"]["T"],
-        config["payoffs"]["S"],
-        config["payoffs"]["P"],
+        config["payoffs"]["reward_payoff"],
+        config["payoffs"]["tempta_payoff"],
+        config["payoffs"]["sucker_payoff"],
+        config["payoffs"]["punish_payoff"],
     )
 
     # Initialize Q-tables

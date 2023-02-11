@@ -26,21 +26,21 @@ class PrisonersDilemmaEnv(gym.Env):
     def __init__(
         self,
         reward_payoff: int,
-        temp_payoff: int,
+        tempta_payoff: int,
         sucker_payoff: int,
         punish_payoff: int,
     ):
         self.observation_space = spaces.Space()
         self.action_space = spaces.Discrete(2)
-        self.reward_range = (sucker_payoff, temp_payoff)
+        self.reward_range = (sucker_payoff, tempta_payoff)
         self.payoff_matrix = self.create_payoff_matrix(
-            reward_payoff, temp_payoff, sucker_payoff, punish_payoff
+            reward_payoff, tempta_payoff, sucker_payoff, punish_payoff
         )
 
     def create_payoff_matrix(
         self,
         reward_payoff: int,
-        temp_payoff: int,
+        tempta_payoff: int,
         sucker_payoff: int,
         punish_payoff: int,
     ) -> Dict:
@@ -57,8 +57,8 @@ class PrisonersDilemmaEnv(gym.Env):
         """
         payoff_dict = {
             "(D, D)": np.array([punish_payoff, punish_payoff]),
-            "(D, C)": np.array([temp_payoff, sucker_payoff]),
-            "(C, D)": np.array([sucker_payoff, temp_payoff]),
+            "(D, C)": np.array([tempta_payoff, sucker_payoff]),
+            "(C, D)": np.array([sucker_payoff, tempta_payoff]),
             "(C, C)": np.array([reward_payoff, reward_payoff]),
         }
         return payoff_dict
