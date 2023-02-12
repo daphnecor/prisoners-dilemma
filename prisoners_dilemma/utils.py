@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Collection of utility function for the prisoner's dilemma."""
+"""Collection of utility functions for the prisoner's dilemma."""
 from typing import Dict, Tuple
 
 import matplotlib.pyplot as plt
@@ -146,6 +146,73 @@ def run_standard_ipd_exp(
     )
 
 
+def run_extended_ipd_exp(config: Dict) -> Tuple[np.array, np.array, np.array, np.array]:
+    '''
+    Allow agent two to see the action of agent one.
+    '''
+
+    game_env = PrisonersDilemmaEnv(
+        config['payoffs']['reward_payoff'], 
+        config['payoffs']['tempta_payoff'], 
+        config['payoffs']['sucker_payoff'], 
+        config['payoffs']['punish_payoff'],
+    )
+
+    # Initialize Q-tables (own act x other play act)
+    q_table_one = np.zeros((game_env.action_space.n))
+    q_table_two = np.zeros((game_env.action_space.n, game_env.action_space.n))
+
+    q_traj_one = np.zeros((config['num_episodes'], game_env.action_space.n))
+    q_traj_two = np.zeros((config['num_episodes'], game_env.action_space.n, game_env.action_space.n))
+    rewards_seq = np.zeros((config['num_episodes'], config['num_agents']))
+    action_seq = np.zeros((config['num_episodes'], config['num_agents']), dtype=int)
+
+    # Condition the action of one agent on the action of the other
+    for episode_i in range(config['num_episodes']):
+
+        # # # # Select action player one # # # #
+        if np.random.random() < config['params']['eps'][0]:
+            act_play_one = np.array([game_env.action_space.sample()])
+        else: # Exploit
+            act_play_one = np.random.choice(
+                 a=np.argwhere((q_table_one == q_table_one.max())).flatten(),
+                size=(1,)
+            )
+        # # # # Select action player two | Condition on the action of player one # # # #
+        if np.random.random() < config['params']['eps'][1]:
+            act_play_two = np.array([game_env.action_space.sample()])
+        else:  # Exploit: choose the action associated with the highest q-value, 
+                # condition on the action of agent one
+            act_play_two = np.random.choice(
+                a=np.argwhere((q_table_two[:, act_play_one] == q_table_two[:, act_play_one].max())).flatten(),
+                size=(1,)
+            )
+
+        # # # # Take a step # # # #
+        actions = np.concatenate([act_play_one, act_play_two])
+        _, rewards, _, _, _ = game_env.step(action=actions)
+
+        # # # # Update Q-values # # # #
+        q_table_one[act_play_one] = q_table_one[act_play_one] + \
+            config['params']['alpha'][0] * (rewards[0] + config['params']['gamma'][0] * np.max(q_table_one) - q_table_one[act_play_one])
+
+        q_table_two[act_play_two, act_play_one] = q_table_two[act_play_two, act_play_one] + \
+            config['params']['alpha'][1] * (rewards[1] + config['params']['gamma'][1] * np.max(q_table_two[:, act_play_one]) - q_table_two[act_play_two, act_play_one])
+
+        # Store trajectory
+        rewards_seq[episode_i, :] = rewards
+        action_seq[episode_i, :] = actions
+        # episode x actions x players
+        q_traj_one[episode_i, :] = q_table_one
+        q_traj_two[episode_i, :, :] = q_table_two
+
+    return (
+        q_traj_one,
+        q_traj_two,
+        rewards_seq,
+        action_seq,
+    )
+
 def make_q_vals_fig_standard(
     action_seq: np.ndarray,
     config: Dict,
@@ -237,3 +304,5 @@ def make_q_vals_fig_standard(
     if input_axs is None:
         plt.tight_layout()
         plt.show()
+
+    
