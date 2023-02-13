@@ -158,8 +158,8 @@ def run_extended_ipd_exp(config: Dict) -> Tuple[np.array, np.array, np.array, np
         config["payoffs"]["punish_payoff"],
     )
 
-    # Initialize Q-tables (own act x other play act)
     q_table_one = np.zeros((game_env.action_space.n))
+    # Initialize Q-tables (own act x other play act)
     q_table_two = np.zeros((game_env.action_space.n, game_env.action_space.n))
 
     q_traj_one = np.zeros((config["num_episodes"], game_env.action_space.n))
